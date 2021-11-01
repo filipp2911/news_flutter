@@ -7,7 +7,7 @@ import '../models/item_model.dart';
 import 'repository.dart';
 
 class NewsDbProvider implements Source, Cache {
-  late Database db;
+  Database? db;
 
   NewsDbProvider() {
     init();
@@ -17,9 +17,9 @@ class NewsDbProvider implements Source, Cache {
     return null;
   }
 
-  init() async {
+  void init() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, "items.db");
+    final path = join(documentsDirectory.path, "items1.db");
     db = await openDatabase(
       path,
       version: 1,
@@ -45,8 +45,8 @@ class NewsDbProvider implements Source, Cache {
       },
     );
   }
-  Future<ItemModel?> fetchItem(int id) async {
-    final maps = await db.query(
+  Future<ItemModel?> fetchItem(int? id) async {
+    final maps = await db!.query(
       "Items",
       columns: null,
       where: "id = ?",
@@ -58,8 +58,17 @@ class NewsDbProvider implements Source, Cache {
     return null;
   }
 
-  Future<int> addItem(ItemModel item) {
-    return db.insert("Items", item.toMap());
+  Future<int> addItem(ItemModel? item) {
+
+    return db!.insert(
+        "Items",
+        item!.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<int> clear() {
+    return db!.delete("Items");
   }
 }
 
